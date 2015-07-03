@@ -1,0 +1,203 @@
+<html>
+<head>
+
+    <link rel="icon" type="image/png" href="icon.png">
+
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+	
+    <script type= "text/javascript">
+    	var key = 'AIzaSyBTs0W0F5gXsvee5EoavUCIefcUGeUqoVI';
+        var publicstring = '<span data-tooltip-text="Public" aria-label="Public" class="vm-video-privacy vm-public yt-uix-tooltip-reverse yt-uix-tooltip yt-sprite" aria-labelledby="yt-uix-tooltip6-arialabel" title="Public"></span>';
+        var linkchannel = 'https://www.youtube.com/channel/';
+        var linkvideo = 'https://www.youtube.com/watch?v=';
+
+    	$(document).ready(function(){
+
+            
+
+            // // save data
+             //var data = JSON.stringify({id:'demo12345'});
+			// alert(data);
+			//data = 'aaa';
+           //  alert(data2);
+            // request.done(function( msg ) {
+            //   console.log(msg);
+            // });
+             
+            // request.fail(function( jqXHR, textStatus ) {
+            //   console.log( "Request failed: " + textStatus );
+            // });
+            // // end save data
+
+
+            $.getJSON('data.json')
+            .done(function(data){
+                $.each(data.youtube,function(key,val){
+                    getVideoInfo(val.id);
+                });
+            });
+
+    		var getVideoInfo = function(id){
+                $.getJSON('https://www.googleapis.com/youtube/v3/videos?id='+id+'&key='+key+'&part=snippet,contentDetails,statistics,status')
+        		.done(function(data){
+        			var items = [];
+
+        			//console.log(data);
+
+        			//console.log(data.items[0].statistics);
+        			var commentCount = data.items[0].statistics.commentCount.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        			var dislikeCount = data.items[0].statistics.dislikeCount.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        			var likeCount = data.items[0].statistics.likeCount.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        			var viewCount = data.items[0].statistics.viewCount.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                    //console.log(data.items[0].status);
+                    var privacyStatus = data.items[0].status.privacyStatus;
+                    if(privacyStatus=="public"){
+                        privacyStatus=publicstring;
+                    }
+
+        			//console.log(data.items[0].snippet);
+                    var channelId = data.items[0].snippet.channelId;
+        			var channelTitle = data.items[0].snippet.channelTitle;
+        			var title = data.items[0].snippet.title;
+        			var description = data.items[0].snippet.description;
+        			var thumbnails = data.items[0].snippet.thumbnails.default.url;
+                    var publishedAt = data.items[0].snippet.publishedAt;
+                    var date = new Date(publishedAt);
+                    var publicdate = date.toUTCString();
+                    var duration = (data.items[0].contentDetails.duration).replace("PT","").replace("H",":").replace("M",":").replace("S","");
+                    
+
+                    $('#youtube').append(
+                        '<div class="media">'+
+                          '<div class="media-left">'+
+                            '<a href="'+linkvideo+id+'" target="_blank">'+
+                              '<img class="media-object" src="'+thumbnails+'" alt="'+title+'">'+
+                              '<span class="duration">'+duration+'</span>'+
+                            '</a>'+
+                          '</div>'+
+                          '<div class="media-body">'+
+                            '<h4 class="media-heading"><a href="'+linkvideo+id+'" target="_blank">'+title+'</a></h4>'+
+                            '<span class="vm-date-info">'+publicdate+'</span><br>'+
+                            'Channel: <a href="'+linkchannel+channelId+'" target="_blank">'+channelTitle+'</a><br/>'+
+                            
+                          '</div>'+
+                          '<div class="media-right">'+
+                            '<div>'+
+                                '<div class="info1">'+
+                                    '<div class="vm-video-indicators">'+privacyStatus+'</div>'+
+                                '</div>'+
+                                '<div class="info2">'+
+                                    '<div class="video-view-count">'+
+                                        '<span title="Views" class="vm-video-metric-icon yt-sprite"></span>'+
+                                        '<span class="vm-video-metric-value">'+viewCount+'</span>'+
+                                    '</div>'+
+                                    '<div style="overflow:hidden;">'+
+                                        '<div class="video-likes-count">'+
+                                            '<span title="Likes" class="vm-video-metric-icon yt-sprite"></span>'+
+                                            '<span class="vm-video-metric-value">'+likeCount+'</span>'+
+                                        '</div>'+
+                                        '<div class="video-dislikes-count">'+
+                                            '<span title="Dislikes" class="vm-video-metric-icon yt-sprite"></span>'+
+                                            '<span class="vm-video-metric-value">'+dislikeCount+'</span>'+
+                                        '</div>'+
+                                    '</div>'+
+                                    '<div class="vm-video-metric video-comments">'+
+                                        '<span title="All comments" class="vm-video-metric-icon yt-sprite"></span>'+
+                                        '<span class="vm-video-metric-value">'+commentCount+'</span>'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'+
+                          '</div>'+
+                        '</div>'
+                    );
+        			
+        		});
+                //.fail(function(data){
+                    //console.log(data);
+                //});
+            }
+    	});
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+
+    <title>YouTube</title>
+</head>
+<body>
+
+    <header class="navbar navbar-static-top bs-docs-nav" id="top" role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="../" class="navbar-brand"><div class="logo"></div></a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="../getting-started/">Getting started</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+
+    <div class="container">
+        <div>
+            <form id="addnew">
+                Add new video
+                <input type="text" name="videoid" id="videoid">
+                <button type="submit">Submit</button>
+                <a href="javascript:;" onClick="del('123')">Del test</a>
+            </form>
+        </div>
+        <div id="youtube"></div>
+    </div>
+</body>
+</html>
+<script>
+	$("#addnew").submit(function(e){	
+			e.preventDefault();
+				form = $('#addnew');
+			//alert(form.serialize());
+             var request = $.ajax({
+               url: "save.php",
+               method: "POST",
+				data: form.serialize(),
+               //dataType: "json",
+			   success: function(data){
+					alert(data);
+				},
+             });
+	});
+	function del(id){
+			var request = $.ajax({
+               url: "del.php",
+               method: "POST",
+				data: {'id':id},
+               //dataType: "json",
+			   success: function(data){
+					alert(data);
+
+				},
+             });
+	};
+
+</script>
